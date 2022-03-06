@@ -32,7 +32,7 @@ public class PracticeTests extends BaseTest {
             String url = element.getAttribute("href");
             String badUrlMsg;
 
-            if (!Objects.isNull(url) && !url.isEmpty()) {
+            if (!Objects.isNull(url) && url.startsWith("http")) {
                 try {
                     System.out.println("checking url - " + url);
                     HttpURLConnection httpUrlConnection = (HttpURLConnection) new URL(url).openConnection();
