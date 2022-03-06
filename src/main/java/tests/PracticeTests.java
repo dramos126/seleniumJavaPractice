@@ -15,6 +15,10 @@ import java.util.stream.IntStream;
 public class PracticeTests extends BaseTest {
 
     static final int[] validResponses = {200, 201};
+    static final String username = "user@phptravels.com";
+    static final String validCreds = "demouser";
+    static final String invalidCreds = "demouser21344";
+
 
     @Test
     void validLinks()  {
@@ -24,7 +28,6 @@ public class PracticeTests extends BaseTest {
         List<String> badURLs = new ArrayList<>(Collections.emptyList());
         System.out.printf("found %d possible urls", elements.size());
 
-        HttpURLConnection httpUrlConnection;
         for (WebElement element : elements) {
             String url = element.getAttribute("href");
             String badUrlMsg;
@@ -32,7 +35,7 @@ public class PracticeTests extends BaseTest {
             if (!Objects.isNull(url) && !url.isEmpty()) {
                 try {
                     System.out.println("checking url - " + url);
-                    httpUrlConnection = (HttpURLConnection) new URL(url).openConnection();
+                    HttpURLConnection httpUrlConnection = (HttpURLConnection) new URL(url).openConnection();
                     httpUrlConnection.setRequestMethod("HEAD");
                     httpUrlConnection.connect();
 
@@ -54,5 +57,22 @@ public class PracticeTests extends BaseTest {
         }
     }
 
+    @Test
+    void basicLogin() {
+        String expectedLandingURL = "https://www.phptravels.net/account/dashboard";
+
+        By emailField = By.xpath("//*[@type='email' and @required='required']");
+        By pwdField = By.xpath("//*[@type='password' and @required='required']");
+        By loginBtn = By.xpath("//span[text()='Login']");
+
+        driver.get("https://www.phptravels.net/login");
+
+        driver.findElement(emailField).sendKeys(username);
+        driver.findElement(pwdField).sendKeys(validCreds);
+        driver.findElement(loginBtn).click();
+
+        String landingURL = driver.getCurrentUrl();
+        Assert.assertEquals(expectedLandingURL, landingURL, "did not land on expected url after logging in");
+    }
 
 }
