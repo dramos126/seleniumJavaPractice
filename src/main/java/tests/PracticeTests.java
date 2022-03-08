@@ -4,6 +4,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.testng.Assert;
 import org.testng.annotations.Test;
+
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -19,39 +20,47 @@ public class PracticeTests extends BaseTest {
     static final String validCreds = "demouser";
     static final String invalidCreds = "demouser21344";
 
-
     @Test
-    void validLinks()  {
+    void validLinks() throws InterruptedException {
         driver.get("http://youtube.com");
         waitUtil.staticWait(1000);
         List<WebElement> elements = driver.findElements(By.tagName("a"));
+        List<Thread> threads = new ArrayList<>(Collections.emptyList());
         List<String> badURLs = new ArrayList<>(Collections.emptyList());
         System.out.printf("found %d possible urls", elements.size());
 
         for (WebElement element : elements) {
-            String url = element.getAttribute("href");
-            String badUrlMsg;
+            Thread t = new Thread(() -> {
+                String url = element.getAttribute("href");
+                String badUrlMsg;
+                if (!Objects.isNull(url) && url.startsWith("http")) {
+                    try {
+                        System.out.println("checking url - " + url);
+                        HttpURLConnection httpUrlConnection = (HttpURLConnection) new URL(url).openConnection();
+                        httpUrlConnection.setRequestMethod("HEAD");
+                        httpUrlConnection.connect();
 
-            if (!Objects.isNull(url) && url.startsWith("http")) {
-                try {
-                    System.out.println("checking url - " + url);
-                    HttpURLConnection httpUrlConnection = (HttpURLConnection) new URL(url).openConnection();
-                    httpUrlConnection.setRequestMethod("HEAD");
-                    httpUrlConnection.connect();
+                        int responseCode = httpUrlConnection.getResponseCode();
+                        boolean isValid = IntStream.of(validResponses).anyMatch(x -> x == responseCode);
 
-                    int responseCode = httpUrlConnection.getResponseCode();
-                    boolean isValid = IntStream.of(validResponses).anyMatch(x -> x == responseCode);
-
-                    if (!isValid) {
-                        badUrlMsg = String.format("url %s returned response code %d \n", url, responseCode);
+                        if (!isValid) {
+                            badUrlMsg = String.format("url %s returned response code %d \n", url, responseCode);
+                            badURLs.add(badUrlMsg);
+                        }
+                    } catch (Exception e) {
+                        badUrlMsg = String.format("caught error while checking %s. Exception %s \n", url, e);
                         badURLs.add(badUrlMsg);
                     }
-                } catch (Exception e) {
-                    badUrlMsg = String.format("caught error while checking %s. Exception %s \n", url, e);
-                    badURLs.add(badUrlMsg);
                 }
-            }
+            });
+            threads.add(t);
+            t.start();
         }
+
+        for (Thread thread : threads) {
+            thread.join();
+        }
+
         if (!badURLs.isEmpty()) {
             Assert.fail(String.valueOf(badURLs));
         }
