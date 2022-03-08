@@ -4,7 +4,6 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.testng.Assert;
 import org.testng.annotations.Test;
-
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -18,12 +17,10 @@ public class PracticeTests extends BaseTest {
     static final int[] validResponses = {200, 201};
     static final String username = "user@phptravels.com";
     static final String validCreds = "demouser";
-    static final String invalidCreds = "demouser21344";
 
     @Test
     void validLinks() throws InterruptedException {
         driver.get("http://youtube.com");
-        waitUtil.staticWait(1000);
         List<WebElement> elements = driver.findElements(By.tagName("a"));
         List<Thread> threads = new ArrayList<>(Collections.emptyList());
         List<String> badURLs = new ArrayList<>(Collections.emptyList());
@@ -83,5 +80,9 @@ public class PracticeTests extends BaseTest {
         String landingURL = driver.getCurrentUrl();
         Assert.assertEquals(expectedLandingURL, landingURL, "did not land on expected url after logging in");
     }
+
+
+
+
 
 }
