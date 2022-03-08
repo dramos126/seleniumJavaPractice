@@ -2,6 +2,7 @@ package tests;
 
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeTest;
 import utils.WaitUtil;
@@ -15,7 +16,10 @@ public class BaseTest {
     @BeforeTest
     void setup() {
         System.setProperty("webdriver.chrome.driver", chromedriverPath);
-        driver = new ChromeDriver();
+        ChromeOptions opts = new ChromeOptions();
+        opts.addArguments("--start-fullscreen");
+
+        driver = new ChromeDriver(opts);
     }
 
     @AfterTest
