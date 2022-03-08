@@ -1,15 +1,15 @@
 package tests;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
 import org.testng.Assert;
 import org.testng.annotations.Test;
+
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.IntStream;
 
 public class PracticeTests extends BaseTest {
@@ -17,10 +17,11 @@ public class PracticeTests extends BaseTest {
     static final int[] validResponses = {200, 201};
     static final String username = "user@phptravels.com";
     static final String validCreds = "demouser";
+    static final String youtube = "http://youtube.com";
 
     @Test
     void validLinks() throws InterruptedException {
-        driver.get("http://youtube.com");
+        driver.get(youtube);
         List<WebElement> elements = driver.findElements(By.tagName("a"));
         List<Thread> threads = new ArrayList<>(Collections.emptyList());
         List<String> badURLs = new ArrayList<>(Collections.emptyList());
@@ -67,8 +68,8 @@ public class PracticeTests extends BaseTest {
     void basicLogin() {
         String expectedLandingURL = "https://www.phptravels.net/account/dashboard";
 
-        By emailField = By.xpath("//*[@type='email' and @required='required']");
-        By pwdField = By.xpath("//*[@type='password' and @required='required']");
+        By emailField = By.name("email");
+        By pwdField = By.name("password");
         By loginBtn = By.xpath("//span[text()='Login']");
 
         driver.get("https://www.phptravels.net/login");
@@ -81,8 +82,48 @@ public class PracticeTests extends BaseTest {
         Assert.assertEquals(expectedLandingURL, landingURL, "did not land on expected url after logging in");
     }
 
+    /**
+     * WIP
+     * need better logic to avoid same url
+     * remove thread sleep
+     */
+    @Test
+    void monkeyTestLinks() throws InterruptedException {
+        int clicks = 50;
 
+        driver.get(youtube);
+        String previousURL = "";
+        while (clicks > 0) {
+            System.out.printf("%d click remaining \n", clicks);
+            clicks--;
+            Thread.sleep(500);
+            List<WebElement> elements = driver.findElements(By.tagName("a"));
+            List<WebElement> validElements = new ArrayList<>(Collections.emptyList());
+            elements.forEach((element) -> {
+                String link = element.getAttribute("href");
+                if (!Objects.isNull(link) && link.startsWith("http")) {
+                    validElements.add(element);
+                }
+            });
 
+            String link;
+            int index;
+
+            do {
+                index = new Random().nextInt(validElements.size() - 1);
+                link = validElements.get(index).getAttribute("href");
+            } while (Objects.equals(link, previousURL) || Objects.equals(link, driver.getCurrentUrl()));
+
+            ((JavascriptExecutor) driver).executeScript("arguments[0].click()", elements.get(index));
+
+            String landingURL = driver.getCurrentUrl();
+
+            if (!link.equals(landingURL)) {
+                Assert.assertNotEquals(landingURL, previousURL);
+            }
+            previousURL = link;
+        }
+    }
 
 
 }
