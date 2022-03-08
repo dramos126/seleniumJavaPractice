@@ -2,6 +2,7 @@ package tests;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebElement;
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -84,25 +85,29 @@ public class PracticeTests extends BaseTest {
 
     /**
      * WIP
-     * need better logic to avoid same url
-     * remove thread sleep
+     * add ability to check url in new tab and close new tab to return to the intial tab\
+     * ]
      */
     @Test
-    void monkeyTestLinks() throws InterruptedException {
+    void monkeyTestLinks() {
         int clicks = 50;
 
         driver.get(youtube);
         String previousURL = "";
         while (clicks > 0) {
-            System.out.printf("%d click remaining \n", clicks);
+            int startingTabs = driver.getWindowHandles().size();
+            System.out.printf("%d clicks remaining \n", clicks);
             clicks--;
-            Thread.sleep(500);
             List<WebElement> elements = driver.findElements(By.tagName("a"));
             List<WebElement> validElements = new ArrayList<>(Collections.emptyList());
             elements.forEach((element) -> {
-                String link = element.getAttribute("href");
-                if (!Objects.isNull(link) && link.startsWith("http")) {
-                    validElements.add(element);
+                try {
+                    String link = element.getAttribute("href");
+                    if (!Objects.isNull(link) && link.startsWith("http")) {
+                        validElements.add(element);
+                    }
+                } catch (StaleElementReferenceException ignored) {
+
                 }
             });
 
@@ -112,18 +117,19 @@ public class PracticeTests extends BaseTest {
             do {
                 index = new Random().nextInt(validElements.size() - 1);
                 link = validElements.get(index).getAttribute("href");
-            } while (Objects.equals(link, previousURL) || Objects.equals(link, driver.getCurrentUrl()));
+            } while (link.equals(previousURL) || link.equals(driver.getCurrentUrl()));
 
-            ((JavascriptExecutor) driver).executeScript("arguments[0].click()", elements.get(index));
+            System.out.printf("clicking %s\n", link);
+            ((JavascriptExecutor) driver).executeScript("arguments[0].click()", validElements.get(index));
+            int afterClickTabCount = driver.getWindowHandles().size();
 
             String landingURL = driver.getCurrentUrl();
 
-            if (!link.equals(landingURL)) {
+            if (!link.equals(landingURL) && startingTabs == afterClickTabCount) {
                 Assert.assertNotEquals(landingURL, previousURL);
             }
             previousURL = link;
         }
     }
-
 
 }
