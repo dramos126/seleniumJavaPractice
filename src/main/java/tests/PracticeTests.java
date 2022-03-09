@@ -85,17 +85,18 @@ public class PracticeTests extends BaseTest {
 
     /**
      * WIP
-     * add ability to check url in new tab and close new tab to return to the intial tab\
-     * ]
+     * still get same url as previous from time to time
      */
     @Test
-    void monkeyTestLinks() {
-        int clicks = 50;
+    void monkeyTestLinks() throws InterruptedException {
+        int clicks = 25;
 
         driver.get(youtube);
         String previousURL = "";
         while (clicks > 0) {
-            int startingTabs = driver.getWindowHandles().size();
+            Thread.sleep(150);
+            ArrayList<String> tabs = new ArrayList<>(driver.getWindowHandles());
+            driver.switchTo().window(tabs.get(0));
             System.out.printf("%d clicks remaining \n", clicks);
             clicks--;
             List<WebElement> elements = driver.findElements(By.tagName("a"));
@@ -117,18 +118,34 @@ public class PracticeTests extends BaseTest {
             do {
                 index = new Random().nextInt(validElements.size() - 1);
                 link = validElements.get(index).getAttribute("href");
-            } while (link.equals(previousURL) || link.equals(driver.getCurrentUrl()));
+            } while (link.equalsIgnoreCase(previousURL) || link.equalsIgnoreCase(driver.getCurrentUrl()));
 
             System.out.printf("clicking %s\n", link);
             ((JavascriptExecutor) driver).executeScript("arguments[0].click()", validElements.get(index));
-            int afterClickTabCount = driver.getWindowHandles().size();
+            tabs = new ArrayList<>(driver.getWindowHandles());
 
+
+            if (tabs.size() < 1) {
+                driver.switchTo().window(tabs.get(1));
+            }
             String landingURL = driver.getCurrentUrl();
 
-            if (!link.equals(landingURL) && startingTabs == afterClickTabCount) {
+            if (!link.equals(landingURL)) {
                 Assert.assertNotEquals(landingURL, previousURL);
             }
+
             previousURL = link;
+
+            if (tabs.size() > 1) {
+                for (int i = 0; i < tabs.size(); i++) {
+                    if (i != 0) {
+                        driver.switchTo().window(tabs.get(i));
+                        driver.close();
+                    }
+                }
+            }
+
+
         }
     }
 
