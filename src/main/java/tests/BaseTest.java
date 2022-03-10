@@ -10,16 +10,16 @@ public class BaseTest {
     WebDriver driver;
     static final String chromedriverPath = PracticeTests.class.getClassLoader().getResource("chromedriver.exe").getPath();
 
-    @BeforeTest
+    @BeforeTest(alwaysRun = true)
     void setup() {
         System.setProperty("webdriver.chrome.driver", chromedriverPath);
         ChromeOptions opts = new ChromeOptions();
-        opts.addArguments("--start-fullscreen");
+//        opts.addArguments("--start-fullscreen");
 
         driver = new ChromeDriver(opts);
     }
 
-    @AfterTest
+    @AfterTest(alwaysRun = true)
     void teardown() {
         driver.quit();
     }

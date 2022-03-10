@@ -8,7 +8,6 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
 import java.util.stream.IntStream;
@@ -93,14 +92,19 @@ public class PracticeTests extends BaseTest {
 
         driver.get(youtube);
         String previousURL = "";
+
         while (clicks > 0) {
-            Thread.sleep(150);
-            ArrayList<String> tabs = new ArrayList<>(driver.getWindowHandles());
-            driver.switchTo().window(tabs.get(0));
             System.out.printf("%d clicks remaining \n", clicks);
             clicks--;
+
+            Thread.sleep(150);
+
+            ArrayList<String> tabs = new ArrayList<>(driver.getWindowHandles());
+            driver.switchTo().window(tabs.get(0));
+
             List<WebElement> elements = driver.findElements(By.tagName("a"));
             List<WebElement> validElements = new ArrayList<>(Collections.emptyList());
+
             elements.forEach((element) -> {
                 try {
                     String link = element.getAttribute("href");
@@ -125,7 +129,7 @@ public class PracticeTests extends BaseTest {
             tabs = new ArrayList<>(driver.getWindowHandles());
 
 
-            if (tabs.size() < 1) {
+            if (tabs.size() > 1) {
                 driver.switchTo().window(tabs.get(1));
             }
             String landingURL = driver.getCurrentUrl();
@@ -144,8 +148,6 @@ public class PracticeTests extends BaseTest {
                     }
                 }
             }
-
-
         }
     }
 
